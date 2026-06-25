@@ -59,7 +59,9 @@ describe("Home Page Health Check", () => {
 
     fireEvent.click(button);
 
-    expect(button.hasAttribute("disabled")).toBe(true);
+    await waitFor(() => {
+      expect(button).toBeDisabled();
+    });
 
     expect(
       screen.getByText(/checking/i)

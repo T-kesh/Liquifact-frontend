@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { copy } from './copy/en';
+import NavMenu from '../components/NavMenu';
 import { getHealth } from '../lib/api/health';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
@@ -16,7 +17,6 @@ export default function Home() {
 
     try {
       const result = await getHealth(API_URL);
-
       setHealth(result);
     } finally {
       setLoading(false);
@@ -60,7 +60,7 @@ export default function Home() {
           </button>
           {!loading && health && (
             <>
-              <p role='status' aria-live="polite">
+              <p role="status" aria-live="polite">
                 Status: {health?.status ?? "Not checked"}
               </p>
 
