@@ -25,6 +25,8 @@ export const copy = {
     title: "Invoices",
     subtext: "Upload and tokenize invoices. List will be wired to the API and Stellar.",
     emptyState: "No invoices yet. Connect wallet and upload your first invoice.",
+    errorTitle: "Unable to load invoices",
+    errorDescription: "There was a problem loading your invoices. Please try again later.",
     backToHome: "\u2190 LiquiFact",
     connectWallet: "Connect Wallet",
   },

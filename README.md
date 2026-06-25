@@ -115,6 +115,16 @@ We welcome UI improvements, new pages (e.g., invoice upload, marketplace), and S
 
 See [COMPONENTS.md](COMPONENTS.md) for the full component library reference — props, accessibility notes, and usage examples for every shared component (`ErrorBanner`, `Footer`, `InvoiceListSkeleton`, `ToastProvider`, `UploadZone`, `WalletStatus`).
 
+## Invoices Page
+
+The SME invoices page (`app/invoices/page.js`) pairs `UploadZone` with the new `InvoiceList` component to deliver instant feedback on uploaded invoice documents.
+
+- `InvoiceList` supports an injectable `loadInvoices` prop, making it easy to test without a backend.
+- The component renders a skeleton loader while invoices are fetched and announces completion through a polite `aria-live` status region.
+- If there are no invoices, the page displays the localized fallback copy from `copy.invoices.emptyState`.
+- When `UploadZone` successfully uploads a file, it calls `onUploadSuccess` so the invoice list can update optimistically.
+- The list shows explicit lifecycle badges for: `Pending tokenization`, `Tokenized`, `Funded`, and `Settled`.
+
 ---
 
 ## Design Tokens
@@ -315,7 +325,15 @@ We welcome UI improvements, new pages (e.g. invoice upload, marketplace), and St
 ## UI Components
 
 See [COMPONENTS.md](COMPONENTS.md) for the full component library reference — props, accessibility notes, and usage examples for every shared component (`ErrorBanner`, `Footer`, `InvoiceListSkeleton`, `ToastProvider`, `UploadZone`, `WalletProvider`, `WalletStatus`).
+## Invoice List
 
+The invoices page now renders an SME invoice table below `UploadZone` using `InvoiceList`.
+
+- `InvoiceList` accepts an injectable `loadInvoices` prop so data loading can be mocked during tests and swapped for a backend API later.
+- While invoices are loading, it renders `InvoiceListSkeleton` and exposes a polite `aria-live` status region for assistive technology.
+- If no invoices are returned, it shows `copy.invoices.emptyState` text.
+- If invoice loading fails, an accessible `ErrorBanner` is displayed with localized fallback copy.
+- After `UploadZone` successfully uploads a document, `onUploadSuccess` appends a new optimistic invoice entry immediately without requiring a manual browser refresh.
 ### Wallet connection (`WalletProvider`)
 
 Wallet state is shared app-wide via `WalletProvider`, mounted in `app/layout.js` inside `ToastProvider`. Any client component can read connection state with `useWallet()`:

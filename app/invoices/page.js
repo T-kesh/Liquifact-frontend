@@ -1,8 +1,18 @@
+"use client";
+
+import { useState } from "react";
 import Link from "next/link";
 import { copy } from "../copy/en";
 import UploadZone from "../../components/UploadZone";
+import InvoiceList from "../../components/InvoiceList";
 
 export default function InvoicesPage() {
+  const [optimisticInvoices, setOptimisticInvoices] = useState([]);
+
+  const handleUploadSuccess = (invoice) => {
+    setOptimisticInvoices((current) => [invoice, ...current]);
+  };
+
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100">
       <header className="border-b border-slate-800 px-6 py-4 flex items-center justify-between">
@@ -22,7 +32,10 @@ export default function InvoicesPage() {
       <main id="main-content" className="max-w-4xl mx-auto px-6 py-12">
         <h1 className="text-2xl font-bold mb-6">{copy.invoices.title}</h1>
         <p className="text-slate-400 mb-8">{copy.invoices.subtext}</p>
-        <UploadZone />
+        <UploadZone onUploadSuccess={handleUploadSuccess} />
+        <div className="mt-10">
+          <InvoiceList optimisticInvoices={optimisticInvoices} />
+        </div>
       </main>
     </div>
   );

@@ -10,7 +10,7 @@
 export default function InvoiceListSkeleton({ rows = 3 }) {
   return (
     <ul
-      aria-label="Loading investable invoices"
+      aria-label="Loading invoices"
       aria-busy="true"
       className="space-y-4"
     >
