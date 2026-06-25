@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Button from './Button';
 import { useToast } from './ToastProvider';
 import { copy } from '../app/copy/en';
 
@@ -201,8 +202,8 @@ export default function WalletStatus() {
       </div>
 
       <Button
-        variant={config.variant}
-        loading={config.loading}
+        variant={config.buttonVariant}
+        loading={walletState === WALLET_STATES.CONNECTING}
         disabled={config.disabled}
         onClick={handleClick}
         aria-label={config.buttonText}
