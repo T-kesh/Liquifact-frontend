@@ -36,7 +36,14 @@ export const copy = {
   },
   footer: {
     docs: "Documentation",
+    docsUrl: "https://docs.liquifact.com",
     status: "System Status",
+    statusUrl: "https://status.liquifact.com",
+    contact: "Contact Support",
+    contactUrl: "mailto:support@liquifact.com",
+    discord: "Discord Community",
+    discordUrl: "https://discord.gg/JrGPH4V3",
+  }
     contact: "Contact Support",
   },
   uploadZone: {

@@ -125,15 +125,7 @@ We welcome UI improvements, new pages (e.g., invoice upload, marketplace), and S
 
 See [COMPONENTS.md](COMPONENTS.md) for the full component library reference — props, accessibility notes, and usage examples for every shared component (`ErrorBanner`, `Footer`, `InvoiceListSkeleton`, `ToastProvider`, `UploadZone`, `WalletStatus`).
 
-## Invoices Page
-
-The SME invoices page (`app/invoices/page.js`) pairs `UploadZone` with the new `InvoiceList` component to deliver instant feedback on uploaded invoice documents.
-
-- `InvoiceList` supports an injectable `loadInvoices` prop, making it easy to test without a backend.
-- The component renders a skeleton loader while invoices are fetched and announces completion through a polite `aria-live` status region.
-- If there are no invoices, the page displays the localized fallback copy from `copy.invoices.emptyState`.
-- When `UploadZone` successfully uploads a file, it calls `onUploadSuccess` so the invoice list can update optimistically.
-- The list shows explicit lifecycle badges for: `Pending tokenization`, `Tokenized`, `Funded`, and `Settled`.
+The `Footer` component now renders real destination links sourced from `app/copy/en.js`, including external documentation, system status, contact support, and a Discord community link with secure `target="_blank" rel="noopener noreferrer"` handling.
 
 ---
 
