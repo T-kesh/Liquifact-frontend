@@ -1,15 +1,12 @@
+// client directive
 "use client";
 import Button from '@/components/Button';
-
-import Button from '@/components/Button'
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import ErrorBanner from "@/components/ErrorBanner";
 import InvoiceListSkeleton from "@/components/InvoiceListSkeleton";
 import Pagination from "@/components/Pagination";
-import Button from '@/components/Button'
 import { copy } from "../copy/en";
-import Button from '@/components/Button'
 import { fetchInvestableInvoices } from "../../lib/api/invoices";
 
 /**

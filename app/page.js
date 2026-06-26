@@ -1,9 +1,10 @@
-﻿"use client";
+"use client";
 
 import { useState } from 'react';
 import Link from 'next/link';
 
 import { copy } from './copy/en';
+import NavMenu from '@/components/NavMenu';
 import { getHealth } from '../lib/api/health';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";

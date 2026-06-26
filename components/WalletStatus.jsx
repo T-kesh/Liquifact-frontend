@@ -1,9 +1,8 @@
-﻿'use client';
+'use client';
 
 import { useState } from 'react';
 import Button from './Button';
 import { useToast } from './ToastProvider';
-import Button from './Button';
 import { copy } from '../app/copy/en';
 
 // Wallet connection states
@@ -186,37 +185,20 @@ export default function WalletStatus() {
         </div>
       )}
 
-      <Button
-        variant={config.buttonVariant}
-        loading={walletState === WALLET_STATES.CONNECTING}
-        disabled={config.disabled}
-        onClick={handleClick}
-        aria-label={config.buttonText}
-        aria-describedby="wallet-helper-text"
-      >
-        {walletState === WALLET_STATES.CONNECTING && (
-          <svg
-            className="animate-spin -ml-1 mr-2 h-4 w-4 inline"
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-            aria-hidden="true"
-          />
-
-          {/* Wallet address or helper text */}
-          {config.showAddress && walletData ? (
-            <div className="flex flex-col">
-              <span className="text-sm font-mono text-slate-300">{walletData.address}</span>
-              <span className="text-xs text-slate-500">{walletData.balance}</span>
-            </div>
-          ) : (
-            <span className="text-sm text-slate-400 max-w-xs">{config.helperText}</span>
-          )}
-        </div>
+      <div className="flex items-center gap-4 rounded-xl border border-slate-800 bg-slate-900 p-4">
+        {/* Wallet address or helper text */}
+        {config.showAddress && walletData ? (
+          <div className="flex flex-col">
+            <span className="text-sm font-mono text-slate-300">{walletData.address}</span>
+            <span className="text-xs text-slate-500">{walletData.balance}</span>
+          </div>
+        ) : (
+          <span className="text-sm text-slate-400 max-w-xs">{config.helperText}</span>
+        )}
 
         <Button
-          variant={config.variant}
-          loading={config.loading}
+          variant={config.buttonVariant}
+          loading={walletState === WALLET_STATES.CONNECTING}
           disabled={config.disabled}
           onClick={handleClick}
           aria-label={config.buttonText}
