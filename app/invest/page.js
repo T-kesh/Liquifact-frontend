@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import ErrorBanner from "@/components/ErrorBanner";
 import InvoiceListSkeleton from "@/components/InvoiceListSkeleton";
+import InvoiceList from "@/components/InvoiceList";
 import { copy } from "../copy/en";
 
 /**
@@ -228,30 +229,7 @@ export function InvestMarketplace({ loadInvoices = loadMockInvoices }) {
           </div>
         ) : (
           <>
-            <ul className="space-y-4">
-              {invoices.map((inv) => (
-                <li
-                  key={inv.id}
-                  className="rounded-xl border border-slate-800 bg-slate-900/50 p-5"
-                >
-                  <div className="flex items-center justify-between mb-3">
-                    <span className="font-medium text-slate-100">
-                      {inv.issuer}
-                    </span>
-                    <span className="text-xs font-semibold px-2 py-1 rounded-full bg-cyan-900/60 text-cyan-300">
-                      {inv.status}
-                    </span>
-                  </div>
-                  <div className="flex gap-6 text-sm text-slate-300">
-                    <span>
-                      {inv.currency}&nbsp;{inv.amount}
-                    </span>
-                    <span>Est. yield&nbsp;{inv.yield}</span>
-                    <span>Maturity&nbsp;{inv.dueDate}</span>
-                  </div>
-                </li>
-              ))}
-            </ul>
+            <InvoiceList invoices={invoices} />
             <div className="mt-6 rounded-xl border border-slate-800 bg-slate-900/30 p-4 text-sm text-slate-300">
               Note: Yield references are educational only and reflect on-chain basis-point assumptions. Invoice contracts settle at maturity.
             </div>
