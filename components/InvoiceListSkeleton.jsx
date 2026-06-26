@@ -16,17 +16,16 @@
  */
 export default function InvoiceListSkeleton({ rows = 3 }) {
   return (
-    <div
-      role="status"
+    <ul
       aria-label="Loading invoices"
-      aria-live="polite"
-      className="space-y-3"
+      aria-busy="true"
+      className="space-y-4"
     >
-      {Array.from({ length: rows }, (_, i) => (
-        <div
-          key={i}
-          className="rounded-lg border border-slate-800 bg-slate-900/60 px-5 py-4 animate-pulse"
-          aria-hidden="true"
+      {Array.from({ length: rows }).map((_, i) => (
+        <li
+          // Use a prefix with index for a stable, deterministic skeleton key since rows are presentational-only
+          key={`skeleton-row-${i}`}
+          className="rounded-xl border border-slate-800 bg-slate-900/50 p-5 animate-pulse"
         >
           {/* Mirrors InvoiceCard row layout */}
           <div className="flex flex-wrap items-center gap-x-6 gap-y-2">

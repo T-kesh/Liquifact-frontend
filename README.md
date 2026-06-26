@@ -37,15 +37,25 @@ Part of the LiquiFact stack: **frontend** (this repo) | **backend** (Express API
 
 ## Development
 
-| Command            | Description                     |
-|-------------------|---------------------------------|
-| `npm run dev`     | Start dev server (Turbopack)   |
-| `npm run lint`    | Run ESLint                      |
-| `npm test`        | Run accessibility tests (Jest) |
-| `npm run build`   | Production build                |
-| `npm run start`   | Start production server         |
+| Command | Description |
+| --- | --- |
+| `npm run dev` | Start dev server (Turbopack) |
+| `npm run lint` | Run ESLint |
+| `npm test` | Run Jest/jsdom unit and accessibility tests |
+| `npm run build` | Production build |
+| `npm run start` | Start production server |
+| `npm run test:e2e` | Run Playwright smoke tests |
 
-Default: http://localhost:3000. The home page can check API health at `NEXT_PUBLIC_API_URL` (default http://localhost:3001).
+### Environment variables
+
+| Variable | Required | Default | Used by |
+| --- | --- | --- | --- |
+| `NEXT_PUBLIC_API_URL` | No | `http://localhost:3001` | [app/page.js](app/page.js) |
+| `NEXT_PUBLIC_STELLAR_NETWORK` | No | Unset | [WALLET_INTEGRATION_CONTRACT.md](WALLET_INTEGRATION_CONTRACT.md) |
+
+`NEXT_PUBLIC_*` values are exposed to the browser and must never contain secrets.
+
+Default: http://localhost:3000. The home page can check API health at `NEXT_PUBLIC_API_URL` (default `http://localhost:3001`).
 
 ---
 
@@ -115,6 +125,8 @@ We welcome UI improvements, new pages (e.g., invoice upload, marketplace), and S
 
 See [COMPONENTS.md](COMPONENTS.md) for the full component library reference — props, accessibility notes, and usage examples for every shared component (`ErrorBanner`, `Footer`, `InvoiceListSkeleton`, `ToastProvider`, `UploadZone`, `WalletStatus`).
 
+The `Footer` component now renders real destination links sourced from `app/copy/en.js`, including external documentation, system status, contact support, and a Discord community link with secure `target="_blank" rel="noopener noreferrer"` handling.
+
 ---
 
 ## Design Tokens
@@ -123,8 +135,8 @@ Global tokens are defined in `app/globals.css` and used across all components.
 
 | Token             | Value     | Tailwind equivalent |
 |-------------------|-----------|--------------------|
-| `--color-bg`      | `#0f0f0f` | `slate-950`        |
-| `--color-primary` | `#06b6d4` | `cyan-400`         |
+| `--color-bg`      | `#020617` | `slate-950`        |
+| `--color-primary` | `#22d3ee` | `cyan-400`         |
 
 Font: **Geist** is loaded via `next/font/google` (see `app/layout.js`). Headings use `font-bold`; body copy uses the default weight.
 
@@ -137,6 +149,7 @@ See [TESTING.md](TESTING.md) for the full guide covering Jest unit/accessibility
 ### Notes about newly added tests
 
 - `app/page.test.tsx` — Unit tests covering the Home page API health check interaction (success, network error, and loading/disabled button states). These tests mock `global.fetch` and use `@testing-library/user-event` for interaction. They are intended to improve coverage for the home page health-check flow.
+- `components/ToastProvider.dedupe.test.tsx` — Covers the bounded toast queue, duplicate collapse, timer refresh, hover pause/resume, and cleanup on unmount. The visible stack is capped to three so repeat errors do not cover the viewport.
 
 
 ---
@@ -200,19 +213,31 @@ For frontend/backend contract details see:
 
 ## Development
 
-| Command            | Description                  |
-| ------------------ | ---------------------------- |
-| `npm run dev`      | Start dev server (Turbopack) |
-| `npm run build`    | Production build             |
-| `npm run start`    | Start production server      |
-| `npm run lint`     | Run ESLint                   |
+| Command | Description |
+| --- | --- |
+| `npm run dev` | Start dev server (Turbopack) |
+| `npm run lint` | Run ESLint |
+| `npm test` | Run Jest/jsdom unit and accessibility tests |
+| `npm run build` | Production build |
+| `npm run start` | Start production server |
 | `npm run test:e2e` | Run Playwright smoke tests (toast & invest marketplace) |
+
+### Environment variables
+
+| Variable | Required | Default | Used by |
+| --- | --- | --- | --- |
+| `NEXT_PUBLIC_API_URL` | No | `http://localhost:3001` | [app/page.js](app/page.js) |
+| `NEXT_PUBLIC_STELLAR_NETWORK` | No | Unset | [WALLET_INTEGRATION_CONTRACT.md](WALLET_INTEGRATION_CONTRACT.md) |
+
+`NEXT_PUBLIC_*` values are exposed to the browser and must never contain secrets.
 
 Default: [http://localhost:3000](http://localhost:3000). The home page can check API health at `NEXT_PUBLIC_API_URL` (default `http://localhost:3001`).
 
+The invoices page header also uses the shared `NavMenu` component, replacing the old bespoke header so navigation and wallet entry stay consistent across routes.
+
 ### Marketplace search
 
-The Invest page (`app/invest/page.js`) includes an issuer search field above the invoice list. Typing in the field filters invoices by case-insensitive substring match on `issuer`. Input is debounced at **200ms** to avoid thrashing on every keystroke. When a filter is active, the `aria-live` status region announces the match count (e.g. "2 of 3 invoices match"). A distinct "no matches" state is shown when the filter yields zero results, separate from the empty-marketplace state.
+The Invest page (`app/invest/page.js`) includes an issuer search field above the invoice list. Typing in the field filters invoices by case-insensitive substring match on `issuer`. Input is debounced at **200ms** so the text field stays responsive while filtering waits for settled input. When a filter is active, the `aria-live` status region announces the match count (e.g. "2 of 3 invoices match"). A distinct "no matches" state is shown when the filter yields zero results, separate from the empty-marketplace state.
 
 ---
 
@@ -235,7 +260,7 @@ liquifact-frontend/
 │           └── not-found.js # Unknown invoice fallback
 ├── components/
 │   ├── WalletStatus.jsx    # Wallet connection UI
-│   └── WalletContext.jsx   # Shared wallet state provider
+│   └── WalletProvider.jsx  # Single source of truth for shared wallet state
 ├── public/
 ├── .env.local.example
 ├── eslint.config.mjs
@@ -315,7 +340,15 @@ We welcome UI improvements, new pages (e.g. invoice upload, marketplace), and St
 ## UI Components
 
 See [COMPONENTS.md](COMPONENTS.md) for the full component library reference — props, accessibility notes, and usage examples for every shared component (`ErrorBanner`, `Footer`, `InvoiceListSkeleton`, `ToastProvider`, `UploadZone`, `WalletProvider`, `WalletStatus`).
+## Invoice List
 
+The invoices page now renders an SME invoice table below `UploadZone` using `InvoiceList`.
+
+- `InvoiceList` accepts an injectable `loadInvoices` prop so data loading can be mocked during tests and swapped for a backend API later.
+- While invoices are loading, it renders `InvoiceListSkeleton` and exposes a polite `aria-live` status region for assistive technology.
+- If no invoices are returned, it shows `copy.invoices.emptyState` text.
+- If invoice loading fails, an accessible `ErrorBanner` is displayed with localized fallback copy.
+- After `UploadZone` successfully uploads a document, `onUploadSuccess` appends a new optimistic invoice entry immediately without requiring a manual browser refresh.
 ### Wallet connection (`WalletProvider`)
 
 Wallet state is shared app-wide via `WalletProvider`, mounted in `app/layout.js` inside `ToastProvider`. Any client component can read connection state with `useWallet()`:
@@ -388,8 +421,8 @@ export default function MyPage() {
 ## Design Tokens
 
 - **Colors**
-  - `--color-bg`: `#0f0f0f` (slate‑950)
-  - `--color-primary`: `#06b6d4` (cyan‑400)
+  - `--color-bg`: `#020617` (slate‑950)
+  - `--color-primary`: `#22d3ee` (cyan‑400)
 
 - **Typography**
   - Font family: **Geist** – imported via `@fontsource/geist`.
@@ -406,13 +439,15 @@ The home page health check now:
 - Uses an 8 second timeout.
 - Aborts hung requests.
 - Safely handles HTML and malformed JSON responses.
-- Reports one of the following:
+- Reports one of the following status states with distinct visual treatments:
 
-  - Connected
-  - Degraded
-  - Unreachable
+  - **Connected** (green badge with ✓ icon) — Backend is healthy and responding correctly
+  - **Degraded** (amber badge with ⚠ icon) — Backend responded but with an error status (e.g., HTTP 500)
+  - **Unreachable** (red badge with ✕ icon) — Backend could not be reached or request timed out
 
-- Provides a detailed disclosure for raw responses.
+- Provides a detailed disclosure for raw responses behind an expandable `<details>` element
+- Status changes are announced politely via `aria-live="polite"` for accessibility
+- Badges include both color and text/icons (not color-only) to meet accessibility requirements
 
 ## Contracts
 
@@ -429,6 +464,65 @@ The home page health check now:
   collapsible `<details>` element and stringified via a depth-limited (max 5 levels),
   length-truncated (max 2000 characters) formatter (`lib/format/safeJson.js`).
   This prevents DoS from giant or deeply nested attacker-controlled payloads.
+
+### HTTP security headers & Content-Security-Policy
+
+Every response carries a baseline set of security headers, attached via the
+`headers()` function in [`next.config.mjs`](next.config.mjs). The values are built by
+[`lib/securityHeaders.mjs`](lib/securityHeaders.mjs) (a small pure module so the policy
+can be unit-tested and later reused by middleware for per-request nonces). Coverage is
+asserted in [`security/headers.test.tsx`](security/headers.test.tsx).
+
+| Header | Value | Purpose |
+|--------|-------|---------|
+| `Content-Security-Policy` | see below | Primary defence against XSS / data injection |
+| `X-Content-Type-Options` | `nosniff` | Stops MIME-sniffing away from the declared type |
+| `Referrer-Policy` | `strict-origin-when-cross-origin` | Avoids leaking invoice/wallet IDs in the `Referer` |
+| `X-Frame-Options` | `DENY` | Legacy clickjacking protection (complements `frame-ancestors`) |
+| `Permissions-Policy` | `camera=(), microphone=(), geolocation=(), payment=(), …` | Disables unused powerful browser features |
+| `Strict-Transport-Security` | `max-age=63072000; includeSubDomains; preload` | Forces HTTPS (ignored over plain http/localhost) |
+| `Cross-Origin-Opener-Policy` | `same-origin` | Isolates the browsing context group |
+
+**Content-Security-Policy directives** (each is annotated in `lib/securityHeaders.mjs`):
+
+| Directive | Value | Why |
+|-----------|-------|-----|
+| `default-src` | `'self'` | Deny-by-default for anything not listed below |
+| `script-src` | `'self' 'unsafe-inline'` (+ `'unsafe-eval'` in dev only) | Next.js App Router injects an inline bootstrap script. `'unsafe-eval'` is added **only** under `next dev` for React Fast Refresh and never ships to production |
+| `style-src` | `'self' 'unsafe-inline' https://fonts.googleapis.com` | `'unsafe-inline'` is required because **next/font** and Tailwind/Next inject inline `<style>` tags and `style` attributes (critical CSS + font variables) that are generated per build and cannot be hashed ahead of time. This relaxation is scoped to styles only — scripts stay far more tightly controlled |
+| `font-src` | `'self' https://fonts.gstatic.com data:` | Geist is self-hosted by `next/font` at build time; the Google Fonts host and `data:` are defensive fallbacks |
+| `connect-src` | `'self' <NEXT_PUBLIC_API_URL origin>` (+ `ws: wss:` in dev) | **Allow-lists the backend API origin** so the home page health check and future `fetch()` calls are not blocked. `ws:`/`wss:` are added only in dev for Hot Module Replacement |
+| `img-src` | `'self' data: blob:` | Inline/generated images and the favicon |
+| `frame-ancestors` | `'none'` | Blocks the app from being framed (clickjacking) |
+| `base-uri` / `object-src` / `form-action` | `'self'` / `'none'` / `'self'` | Prevent `<base>` hijacking, plugins, and off-origin form posts |
+
+The backend origin is read from `NEXT_PUBLIC_API_URL` (default `http://localhost:3001`).
+If you point the app at a different backend, that origin is automatically added to
+`connect-src` — no manual CSP edit needed.
+
+#### Verifying the headers at runtime
+
+```bash
+npm run build && npm run start
+# in another shell:
+curl -sI http://localhost:3000 | grep -i -E 'content-security-policy|x-frame|referrer|permissions|content-type-options'
+```
+
+Load each page (`/`, `/invoices`, `/invest`) with DevTools open and confirm there are
+**no CSP violation messages** in the console, that the Geist font renders, and that the
+**Check API Health** button still reaches the backend.
+
+#### Threat-model note
+
+These headers harden the app ahead of wallet and API integration that will handle
+financial data. The CSP is the main mitigation for **cross-site scripting** — even if
+attacker-controlled markup reaches the DOM, it cannot load off-origin scripts, exfiltrate
+data to an unlisted host (`connect-src`), or be framed for clickjacking (`frame-ancestors`).
+`nosniff` and `Referrer-Policy` close common information-leak / content-confusion vectors.
+The known residual is `'unsafe-inline'` for **styles** (not scripts): CSS-only injection
+remains possible, which is low-impact compared to script execution. The planned next step
+is to move to per-request **nonces** via `middleware.js`, which would let us drop
+`'unsafe-inline'` from `script-src` entirely.
 
 ## License
 

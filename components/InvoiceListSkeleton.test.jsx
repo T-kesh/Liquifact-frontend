@@ -55,4 +55,14 @@ describe("InvoiceListSkeleton", () => {
     const { asFragment } = render(<InvoiceListSkeleton rows={2} />);
     expect(asFragment()).toMatchSnapshot();
   });
+
+  it("verifies the stable, deterministic key strategy for list items", () => {
+    const element = InvoiceListSkeleton({ rows: 4 });
+    const listItems = element.props.children;
+    expect(listItems).toHaveLength(4);
+    listItems.forEach((item, i) => {
+      expect(item.key).toBe(`skeleton-row-${i}`);
+    });
+  });
 });
+

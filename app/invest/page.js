@@ -1,13 +1,17 @@
 "use client";
 import Button from '@/components/Button';
 
+import Button from '@/components/Button'
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import ErrorBanner from "@/components/ErrorBanner";
 import InvoiceCard from "@/components/InvoiceCard";
 import InvoiceListSkeleton from "@/components/InvoiceListSkeleton";
 import Pagination from "@/components/Pagination";
+import Button from '@/components/Button'
 import { copy } from "../copy/en";
+import Button from '@/components/Button'
+import { fetchInvestableInvoices } from "../../lib/api/invoices";
 
 /**
  * Number of invoices rendered per page.  Export allows tests to reference
@@ -16,7 +20,7 @@ import { copy } from "../copy/en";
 export const PAGE_SIZE = 10;
 
 /**
- * Mock invoice data — replace with real API call once the backend endpoint
+ * Mock invoice data â€” replace with real API call once the backend endpoint
  * is available (follow-up: link backend issue here).
  *
  * Shape: { id, issuer, amount, currency, dueDate, yield, status }
@@ -67,10 +71,16 @@ function loadMockInvoices() {
 /**
  * Returns the screen-reader announcement text for the initial invoice load.
  *
- * @param {import('@/lib/types/invoice').Invoice[]} invoices - The resolved invoice array (may be empty).
+ * @param {Array} invoices - The resolved invoice array (may be empty).
+ * @param {object} [options]
+ * @param {boolean} [options.filterActive=false] - Whether an issuer filter is applied.
+ * @param {number} [options.filteredCount=0] - Number of invoices matching the current filter.
  * @returns {string}
  */
-export function getInvoiceLoadAnnouncement(invoices) {
+export function getInvoiceLoadAnnouncement(
+  invoices,
+  { filterActive = false, filteredCount = 0 } = {},
+) {
   if (!Array.isArray(invoices) || invoices.length === 0) {
     return "No invoices available";
   }
@@ -89,7 +99,7 @@ export function getPaginationAnnouncement(shown, total) {
 }
 
 /**
- * InvestMarketplace — main component for the invest page.
+ * InvestMarketplace â€” main component for the invest page.
  *
  * Fetches invoices via `loadInvoices`, renders them PAGE_SIZE at a time,
  * and exposes a "Load more" control to append the next batch.  Paging
@@ -101,36 +111,40 @@ export function getPaginationAnnouncement(shown, total) {
  *   invoice array.  Defaults to the mock loader; injectable for testing.
  * @returns {JSX.Element}
  */
-export function InvestMarketplace({ loadInvoices = loadMockInvoices }) {
+export function InvestMarketplace({ loadInvoices = fetchInvestableInvoices }) {
   const [invoices, setInvoices] = useState(null); // null = loading
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
-  const [statusMessage, setStatusMessage] = useState("");
+  const [paginationAnnouncement, setPaginationAnnouncement] = useState("");
   const [loadError, setLoadError] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
+  const [debouncedQuery, setDebouncedQuery] = useState("");
+  const [filters, setFilters] = useState(DEFAULT_FILTERS);
 
-  /** Ref forwarded to the "Load more" button for focus management. */
+  /** Ref forwarded to the \"Load more\" button for focus management. */
   const loadMoreRef = useRef(null);
 
-  // ── Fetch invoices ────────────────────────────────────────────────────────
+  // ——————————————————————————————————————————————————————————————————————————
   useEffect(() => {
+    const controller = new AbortController();
     let isActive = true;
 
     const announceLoadCompletion = async () => {
       try {
-        const nextInvoices = await loadInvoices();
+        const nextInvoices = await loadInvoices({ signal: controller.signal });
 
         if (!isActive) return;
 
         const normalizedInvoices = Array.isArray(nextInvoices) ? nextInvoices : [];
 
         setInvoices(normalizedInvoices);
-        setStatusMessage(getInvoiceLoadAnnouncement(normalizedInvoices));
+        setVisibleCount(PAGE_SIZE);
+        setPaginationAnnouncement("");
       } catch {
         if (!isActive) return;
 
         setInvoices([]);
         setLoadError(copy.invest.errorDescription);
-        setStatusMessage(copy.invest.errorStatus);
+        setPaginationAnnouncement("");
       }
     };
 
@@ -138,17 +152,19 @@ export function InvestMarketplace({ loadInvoices = loadMockInvoices }) {
 
     return () => {
       isActive = false;
+      controller.abort();
     };
   }, [loadInvoices]);
 
-  // ── Reset paging when a new invoice set arrives ───────────────────────────
+  // ——————————————————————————————————————————————————————————————————————————
   useEffect(() => {
-    if (invoices !== null) {
-      setVisibleCount(PAGE_SIZE);
-    }
-  }, [invoices]);
+    const timer = setTimeout(() => {
+      setDebouncedQuery(searchQuery);
+    }, 200);
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
 
-  // ── Load-more handler ─────────────────────────────────────────────────────
+  // â”€â”€ Load-more handler â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   /**
    * Appends the next PAGE_SIZE items and updates the live-region status.
    * Focus is moved back to the "Load more" button (if it still exists) so
@@ -168,7 +184,7 @@ export function InvestMarketplace({ loadInvoices = loadMockInvoices }) {
     }, 0);
   }, [invoices]);
 
-  // ── Derived values ────────────────────────────────────────────────────────
+  // â”€â”€ Derived values â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const visibleInvoices = Array.isArray(invoices)
     ? invoices.slice(0, visibleCount)
     : [];
@@ -192,88 +208,18 @@ export function InvestMarketplace({ loadInvoices = loadMockInvoices }) {
           {statusMessage}
         </p>
 
-        {/* Filter Controls - Disabled with Coming Soon Indicators */}
+        {/* Filter Controls */}
         <div className="mb-8 rounded-xl border border-slate-800 bg-slate-900/30 p-6">
           <div className="flex flex-wrap gap-4 items-center">
-            {/* Issuer Search */}
-            <div className="flex items-center gap-2">
-              <label htmlFor="issuer-search" className="sr-only">Filter by issuer</label>
-              <input
-                id="issuer-search"
-                type="search"
-                placeholder="Filter by issuer…"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="rounded-lg border border-slate-700 bg-slate-800 px-4 py-2 text-sm text-slate-100 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-cyan-400 focus:ring-offset-2 focus:ring-offset-slate-950"
-              />
-            </div>
-
-            {/* Yield Range Filter */}
-            <div className="flex items-center gap-2">
-              <Button variant="secondary" disabled>Coming Soon</Button>
-              <span className="inline-flex items-center rounded-full bg-slate-700/60 px-2.5 py-1 text-xs font-medium text-slate-300">Soon</span>
-            </div>
-
-            {/* Currency Filter */}
-            <div className="flex items-center gap-2">
-              <button
-                type="button"
-                disabled
-                className="rounded-lg border border-slate-700 bg-slate-800/50 px-4 py-2 text-sm text-slate-500 cursor-not-allowed opacity-60 transition-colors"
-                aria-label="Currency filter (coming soon)"
-              >
-                Currency
-                <svg className="inline-block ml-2 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                </svg>
-              </button>
-              <span className="inline-flex items-center rounded-full bg-slate-700/60 px-2.5 py-1 text-xs font-medium text-slate-300">Soon</span>
-            </div>
-
-            {/* Maturity Date Filter */}
-            <div className="flex items-center gap-2">
-              <button
-                type="button"
-                disabled
-                className="rounded-lg border border-slate-700 bg-slate-800/50 px-4 py-2 text-sm text-slate-500 cursor-not-allowed opacity-60 transition-colors"
-                aria-label="Maturity date filter (coming soon)"
-              >
-                Maturity Date
-                <svg className="inline-block ml-2 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                </svg>
-              </button>
-              <span className="inline-flex items-center rounded-full bg-slate-700/60 px-2.5 py-1 text-xs font-medium text-slate-300">Soon</span>
-            </div>
-
-            {/* Sort Options */}
-            <div className="flex items-center gap-2">
-              <button
-                type="button"
-                disabled
-                className="rounded-lg border border-slate-700 bg-slate-800/50 px-4 py-2 text-sm text-slate-500 cursor-not-allowed opacity-60 transition-colors"
-                aria-label="Sort options (coming soon)"
-              >
-                Sort: Best Yield
-                <svg className="inline-block ml-2 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                </svg>
-              </button>
-              <span className="inline-flex items-center rounded-full bg-slate-700/60 px-2.5 py-1 text-xs font-medium text-slate-300">Soon</span>
-            </div>
-
-            {/* Clear Filters - Also Disabled */}
-            <div className="flex items-center gap-2 ml-auto">
-              <button
-                type="button"
-                disabled
-                className="rounded-lg border border-slate-700 bg-slate-800/50 px-4 py-2 text-sm text-slate-500 cursor-not-allowed opacity-60 transition-colors"
-                aria-label="Clear filters (coming soon)"
-              >
-                Clear Filters
-              </button>
-              <span className="inline-flex items-center rounded-full bg-slate-700/60 px-2.5 py-1 text-xs font-medium text-slate-300">Soon</span>
-            </div>
+            <InvoiceSearch
+              value={searchQuery}
+              onChange={handleSearchChange}
+            />
+            <InvoiceFilters
+              filters={filters}
+              onFilterChange={setFilters}
+              onClearFilters={() => setFilters(DEFAULT_FILTERS)}
+            />
           </div>
         </div>
 
@@ -286,16 +232,36 @@ export function InvestMarketplace({ loadInvoices = loadMockInvoices }) {
           />
         ) : invoices === null ? (
           <InvoiceListSkeleton rows={3} />
-        ) : invoices.length === 0 ? (
-          <div className="rounded-xl border border-slate-800 bg-slate-900/30 p-8 text-center text-slate-300">
-            {copy.invest.emptyState}
-          </div>
+        ) : allInvoices.length === 0 ? (
+          <div className="rounded-xl border border-slate-800 bg-slate-900/30 p-8 text-center text-slate-300">{copy.invest.emptyState}</div>
+        ) : filteredInvoices.length === 0 ? (
+          <div className="rounded-xl border border-slate-800 bg-slate-900/30 p-8 text-center text-slate-300">No invoices match your filters.</div>
         ) : (
           <>
             <ul className="space-y-4">
-              {visibleInvoices.map((inv) => (
+              {filteredInvoices.map((inv) => (
                 <li key={inv.id}>
-                  <InvoiceCard invoice={inv} />
+                  <Link
+                    href={`/invest/${inv.id}`}
+                    className="block rounded-xl border border-slate-800 bg-slate-900/50 p-5 hover:border-cyan-500/50 transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-400"
+                    aria-label={`View details for ${inv.issuer} invoice ${inv.id}`}
+                  >
+                    <div className="flex items-center justify-between mb-3">
+                      <span className="font-medium text-slate-100">
+                        {inv.issuer}
+                      </span>
+                      <span className="text-xs font-semibold px-2 py-1 rounded-full bg-cyan-900/60 text-cyan-300">
+                        {inv.status}
+                      </span>
+                    </div>
+                    <div className="flex gap-6 text-sm text-slate-300">
+                      <span>
+                        {inv.currency}&nbsp;{inv.amount}
+                      </span>
+                      <span>Est. yield&nbsp;{inv.yield}</span>
+                      <span>Maturity&nbsp;{inv.dueDate}</span>
+                    </div>
+                  </Link>
                 </li>
               ))}
             </ul>
@@ -303,7 +269,7 @@ export function InvestMarketplace({ loadInvoices = loadMockInvoices }) {
             <Pagination
               ref={loadMoreRef}
               shown={visibleInvoices.length}
-              total={invoices.length}
+              total={filteredInvoices.length}
               onLoadMore={handleLoadMore}
             />
 
@@ -320,3 +286,4 @@ export function InvestMarketplace({ loadInvoices = loadMockInvoices }) {
 export default function InvestPage() {
   return <InvestMarketplace />;
 }
+
