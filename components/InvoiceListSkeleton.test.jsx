@@ -17,16 +17,14 @@ describe("InvoiceListSkeleton", () => {
 
   it("has aria-busy true", () => {
     const { container } = render(<InvoiceListSkeleton />);
-    expect(
-      container.querySelector("ul").getAttribute("aria-busy")
-    ).toBe("true");
+    expect(container.querySelector("ul").getAttribute("aria-busy")).toBe("true");
   });
 
   it("has descriptive aria-label", () => {
     const { container } = render(<InvoiceListSkeleton />);
-    expect(
-      container.querySelector("ul").getAttribute("aria-label")
-    ).toBe("Loading investable invoices");
+    expect(container.querySelector("ul").getAttribute("aria-label")).toBe(
+      "Loading investable invoices"
+    );
   });
 
   it("each row has animate-pulse class", () => {
@@ -47,4 +45,3 @@ describe("InvoiceListSkeleton", () => {
     });
   });
 });
-

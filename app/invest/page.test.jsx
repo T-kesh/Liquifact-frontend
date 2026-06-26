@@ -32,7 +32,7 @@ function createDeferredLoader(invoices, delayMs = 0) {
     () =>
       new Promise((resolve) => {
         setTimeout(() => resolve(invoices), delayMs);
-      }),
+      })
   );
 }
 
@@ -124,27 +124,20 @@ describe("InvestMarketplace", () => {
 
     expect(screen.getByRole("list", { name: /loading investable invoices/i })).toHaveAttribute(
       "aria-busy",
-      "true",
+      "true"
     );
 
     await flushTimers(100);
 
-    expect(screen.getByRole("status")).toHaveTextContent(
-      "3 investable invoices loaded",
-    );
+    expect(screen.getByRole("status")).toHaveTextContent("3 investable invoices loaded");
     expect(screen.getAllByRole("listitem")).toHaveLength(3);
-    expect(screen.getByRole("status")).toHaveAttribute(
-      "aria-live",
-      "polite",
-    );
+    expect(screen.getByRole("status")).toHaveAttribute("aria-live", "polite");
     expect(loadInvoices).toHaveBeenCalledTimes(1);
 
     rerender(<InvestMarketplace loadInvoices={loadInvoices} />);
 
     expect(loadInvoices).toHaveBeenCalledTimes(1);
-    expect(screen.getByRole("status")).toHaveTextContent(
-      "3 investable invoices loaded",
-    );
+    expect(screen.getByRole("status")).toHaveTextContent("3 investable invoices loaded");
   });
 
   it("renders each invoice as a list item once the marketplace loads", async () => {
@@ -185,11 +178,9 @@ describe("InvestMarketplace", () => {
 
     await flushTimers(100);
 
-    expect(screen.getByRole("status")).toHaveTextContent(
-      "No invoices available",
-    );
+    expect(screen.getByRole("status")).toHaveTextContent("No invoices available");
     expect(
-      screen.getByText(/No investable invoices\. Connect wallet to see the marketplace\./i),
+      screen.getByText(/No investable invoices\. Connect wallet to see the marketplace\./i)
     ).toBeInTheDocument();
   });
 
@@ -198,18 +189,16 @@ describe("InvestMarketplace", () => {
       () =>
         new Promise((_, reject) => {
           setTimeout(() => reject(new Error("boom")), 50);
-        }),
+        })
     );
 
     render(<InvestMarketplace loadInvoices={loadInvoices} />);
 
     await flushTimers(50);
 
-    expect(screen.getByRole("status")).toHaveTextContent(
-      "Unable to load investable invoices.",
-    );
+    expect(screen.getByRole("status")).toHaveTextContent("Unable to load investable invoices.");
     expect(screen.getByRole("alert")).toHaveTextContent(
-      "Unable to load investable invoices right now.",
+      "Unable to load investable invoices right now."
     );
   });
 
@@ -232,9 +221,7 @@ describe("InvestMarketplace", () => {
     render(<InvestMarketplace loadInvoices={loadInvoices} />);
     await flushTimers(50);
 
-    expect(
-      screen.getByRole("button", { name: /load more invoices/i }),
-    ).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /load more invoices/i })).toBeInTheDocument();
   });
 
   it("clicking Load more appends the next batch of invoices", async () => {
@@ -273,9 +260,7 @@ describe("InvestMarketplace", () => {
       await Promise.resolve();
     });
 
-    expect(
-      screen.queryByRole("button", { name: /load more invoices/i }),
-    ).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /load more invoices/i })).not.toBeInTheDocument();
   });
 
   it("updates the status region to Showing N of M after Load more", async () => {
@@ -293,7 +278,7 @@ describe("InvestMarketplace", () => {
     });
 
     expect(screen.getByRole("status")).toHaveTextContent(
-      `Showing ${total} of ${total} investable invoices`,
+      `Showing ${total} of ${total} investable invoices`
     );
   });
 
@@ -304,9 +289,7 @@ describe("InvestMarketplace", () => {
     render(<InvestMarketplace loadInvoices={loadInvoices} />);
     await flushTimers(50);
 
-    expect(
-      screen.queryByRole("button", { name: /load more invoices/i }),
-    ).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /load more invoices/i })).not.toBeInTheDocument();
     expect(screen.getAllByRole("listitem")).toHaveLength(PAGE_SIZE - 1);
   });
 
@@ -317,9 +300,7 @@ describe("InvestMarketplace", () => {
     render(<InvestMarketplace loadInvoices={loadInvoices} />);
     await flushTimers(50);
 
-    expect(
-      screen.queryByRole("button", { name: /load more invoices/i }),
-    ).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /load more invoices/i })).not.toBeInTheDocument();
     expect(screen.getAllByRole("listitem")).toHaveLength(PAGE_SIZE);
   });
 
@@ -348,9 +329,7 @@ describe("InvestMarketplace", () => {
       await Promise.resolve();
     });
     expect(screen.getAllByRole("listitem")).toHaveLength(total);
-    expect(
-      screen.queryByRole("button", { name: /load more invoices/i }),
-    ).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /load more invoices/i })).not.toBeInTheDocument();
   });
 
   /**
@@ -374,15 +353,39 @@ describe("InvestMarketplace", () => {
     });
 
     expect(document.activeElement).toBe(
-      screen.queryByRole("button", { name: /load more invoices/i }),
+      screen.queryByRole("button", { name: /load more invoices/i })
     );
   });
 
   it("filters invoices by currency", async () => {
     const invoices = [
-      { id: "inv-001", issuer: "A", amount: "100", currency: "USD", dueDate: "2026-06-15", yield: "5%", status: "Open" },
-      { id: "inv-002", issuer: "B", amount: "200", currency: "EUR", dueDate: "2026-07-01", yield: "6%", status: "Open" },
-      { id: "inv-003", issuer: "C", amount: "300", currency: "USD", dueDate: "2026-05-30", yield: "7%", status: "Open" },
+      {
+        id: "inv-001",
+        issuer: "A",
+        amount: "100",
+        currency: "USD",
+        dueDate: "2026-06-15",
+        yield: "5%",
+        status: "Open",
+      },
+      {
+        id: "inv-002",
+        issuer: "B",
+        amount: "200",
+        currency: "EUR",
+        dueDate: "2026-07-01",
+        yield: "6%",
+        status: "Open",
+      },
+      {
+        id: "inv-003",
+        issuer: "C",
+        amount: "300",
+        currency: "USD",
+        dueDate: "2026-05-30",
+        yield: "7%",
+        status: "Open",
+      },
     ];
 
     render(<InvestMarketplace loadInvoices={createDeferredLoader(invoices, 0)} />);
@@ -396,9 +399,33 @@ describe("InvestMarketplace", () => {
 
   it("filters invoices by minimum yield", async () => {
     const invoices = [
-      { id: "inv-001", issuer: "A", amount: "100", currency: "USD", dueDate: "2026-06-15", yield: "5.2%", status: "Open" },
-      { id: "inv-002", issuer: "B", amount: "200", currency: "EUR", dueDate: "2026-07-01", yield: "7.5%", status: "Open" },
-      { id: "inv-003", issuer: "C", amount: "300", currency: "USD", dueDate: "2026-05-30", yield: "9.1%", status: "Open" },
+      {
+        id: "inv-001",
+        issuer: "A",
+        amount: "100",
+        currency: "USD",
+        dueDate: "2026-06-15",
+        yield: "5.2%",
+        status: "Open",
+      },
+      {
+        id: "inv-002",
+        issuer: "B",
+        amount: "200",
+        currency: "EUR",
+        dueDate: "2026-07-01",
+        yield: "7.5%",
+        status: "Open",
+      },
+      {
+        id: "inv-003",
+        issuer: "C",
+        amount: "300",
+        currency: "USD",
+        dueDate: "2026-05-30",
+        yield: "9.1%",
+        status: "Open",
+      },
     ];
 
     render(<InvestMarketplace loadInvoices={createDeferredLoader(invoices, 0)} />);
@@ -413,14 +440,32 @@ describe("InvestMarketplace", () => {
 
   it("filters invoices by maturity date range", async () => {
     const invoices = [
-      { id: "inv-001", issuer: "A", amount: "100", currency: "USD", dueDate: "2026-06-15", yield: "5%", status: "Open" },
-      { id: "inv-002", issuer: "B", amount: "200", currency: "EUR", dueDate: "2026-07-01", yield: "6%", status: "Open" },
+      {
+        id: "inv-001",
+        issuer: "A",
+        amount: "100",
+        currency: "USD",
+        dueDate: "2026-06-15",
+        yield: "5%",
+        status: "Open",
+      },
+      {
+        id: "inv-002",
+        issuer: "B",
+        amount: "200",
+        currency: "EUR",
+        dueDate: "2026-07-01",
+        yield: "6%",
+        status: "Open",
+      },
     ];
 
     render(<InvestMarketplace loadInvoices={createDeferredLoader(invoices, 0)} />);
     await flushTimers(0);
 
-    fireEvent.change(screen.getByLabelText("Maturity date from"), { target: { value: "2026-07-01" } });
+    fireEvent.change(screen.getByLabelText("Maturity date from"), {
+      target: { value: "2026-07-01" },
+    });
 
     expect(screen.getAllByRole("listitem")).toHaveLength(1);
     expect(screen.getByText("B")).toBeInTheDocument();
@@ -428,9 +473,33 @@ describe("InvestMarketplace", () => {
 
   it("sorts invoices by yield descending", async () => {
     const invoices = [
-      { id: "inv-001", issuer: "A", amount: "100", currency: "USD", dueDate: "2026-06-15", yield: "5%", status: "Open" },
-      { id: "inv-002", issuer: "B", amount: "200", currency: "EUR", dueDate: "2026-07-01", yield: "9%", status: "Open" },
-      { id: "inv-003", issuer: "C", amount: "300", currency: "USD", dueDate: "2026-05-30", yield: "7%", status: "Open" },
+      {
+        id: "inv-001",
+        issuer: "A",
+        amount: "100",
+        currency: "USD",
+        dueDate: "2026-06-15",
+        yield: "5%",
+        status: "Open",
+      },
+      {
+        id: "inv-002",
+        issuer: "B",
+        amount: "200",
+        currency: "EUR",
+        dueDate: "2026-07-01",
+        yield: "9%",
+        status: "Open",
+      },
+      {
+        id: "inv-003",
+        issuer: "C",
+        amount: "300",
+        currency: "USD",
+        dueDate: "2026-05-30",
+        yield: "7%",
+        status: "Open",
+      },
     ];
 
     render(<InvestMarketplace loadInvoices={createDeferredLoader(invoices, 0)} />);
@@ -454,7 +523,15 @@ describe("InvestMarketplace", () => {
 
   it("shows no-match message when filters eliminate all invoices", async () => {
     const invoices = [
-      { id: "inv-001", issuer: "A", amount: "100", currency: "USD", dueDate: "2026-06-15", yield: "5%", status: "Open" },
+      {
+        id: "inv-001",
+        issuer: "A",
+        amount: "100",
+        currency: "USD",
+        dueDate: "2026-06-15",
+        yield: "5%",
+        status: "Open",
+      },
     ];
 
     render(<InvestMarketplace loadInvoices={createDeferredLoader(invoices, 0)} />);
@@ -468,8 +545,24 @@ describe("InvestMarketplace", () => {
 
   it("clears all filters and restores full list", async () => {
     const invoices = [
-      { id: "inv-001", issuer: "A", amount: "100", currency: "USD", dueDate: "2026-06-15", yield: "5%", status: "Open" },
-      { id: "inv-002", issuer: "B", amount: "200", currency: "EUR", dueDate: "2026-07-01", yield: "6%", status: "Open" },
+      {
+        id: "inv-001",
+        issuer: "A",
+        amount: "100",
+        currency: "USD",
+        dueDate: "2026-06-15",
+        yield: "5%",
+        status: "Open",
+      },
+      {
+        id: "inv-002",
+        issuer: "B",
+        amount: "200",
+        currency: "EUR",
+        dueDate: "2026-07-01",
+        yield: "6%",
+        status: "Open",
+      },
     ];
 
     render(<InvestMarketplace loadInvoices={createDeferredLoader(invoices, 0)} />);
@@ -484,8 +577,24 @@ describe("InvestMarketplace", () => {
 
   it("announces filtered results in the live region", async () => {
     const invoices = [
-      { id: "inv-001", issuer: "A", amount: "100", currency: "USD", dueDate: "2026-06-15", yield: "5%", status: "Open" },
-      { id: "inv-002", issuer: "B", amount: "200", currency: "EUR", dueDate: "2026-07-01", yield: "6%", status: "Open" },
+      {
+        id: "inv-001",
+        issuer: "A",
+        amount: "100",
+        currency: "USD",
+        dueDate: "2026-06-15",
+        yield: "5%",
+        status: "Open",
+      },
+      {
+        id: "inv-002",
+        issuer: "B",
+        amount: "200",
+        currency: "EUR",
+        dueDate: "2026-07-01",
+        yield: "6%",
+        status: "Open",
+      },
     ];
 
     render(<InvestMarketplace loadInvoices={createDeferredLoader(invoices, 0)} />);
@@ -505,7 +614,7 @@ describe("getInvoiceLoadAnnouncement", () => {
   it("returns the expected announcement for loaded and empty states", () => {
     expect(getInvoiceLoadAnnouncement([])).toBe("No invoices available");
     expect(getInvoiceLoadAnnouncement([{ id: "1" }, { id: "2" }])).toBe(
-      "2 investable invoices loaded",
+      "2 investable invoices loaded"
     );
   });
 
@@ -515,7 +624,7 @@ describe("getInvoiceLoadAnnouncement", () => {
       getInvoiceLoadAnnouncement(invoices, {
         filterActive: true,
         filteredCount: 2,
-      }),
+      })
     ).toBe("2 of 3 invoices match");
   });
 
@@ -525,7 +634,7 @@ describe("getInvoiceLoadAnnouncement", () => {
       getInvoiceLoadAnnouncement(invoices, {
         filterActive: true,
         filteredCount: 0,
-      }),
+      })
     ).toBe("No invoices match");
   });
 });
@@ -566,11 +675,7 @@ describe("lib helpers", () => {
 
 describe("getPaginationAnnouncement", () => {
   it("formats the Showing N of M string correctly", () => {
-    expect(getPaginationAnnouncement(10, 25)).toBe(
-      "Showing 10 of 25 investable invoices",
-    );
-    expect(getPaginationAnnouncement(3, 3)).toBe(
-      "Showing 3 of 3 investable invoices",
-    );
+    expect(getPaginationAnnouncement(10, 25)).toBe("Showing 10 of 25 investable invoices");
+    expect(getPaginationAnnouncement(3, 3)).toBe("Showing 3 of 3 investable invoices");
   });
 });

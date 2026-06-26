@@ -1,25 +1,25 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import Button from './Button';
-import { useToast } from './ToastProvider';
-import { copy } from '../app/copy/en';
+import { useState } from "react";
+import Button from "./Button";
+import { useToast } from "./ToastProvider";
+import { copy } from "../app/copy/en";
 
 // Wallet connection states
 const WALLET_STATES = {
-  DISCONNECTED: 'disconnected',
-  CONNECTING: 'connecting',
-  CONNECTED: 'connected',
-  ERROR: 'error',
-  WRONG_NETWORK: 'wrong_network',
-  NO_WALLET: 'no_wallet',
+  DISCONNECTED: "disconnected",
+  CONNECTING: "connecting",
+  CONNECTED: "connected",
+  ERROR: "error",
+  WRONG_NETWORK: "wrong_network",
+  NO_WALLET: "no_wallet",
 };
 
 // Mock wallet data for UI development
 const mockWalletData = {
-  address: 'GABC...XYZ123',
-  network: 'public',
-  balance: '1,234.56 XLM',
+  address: "GABC...XYZ123",
+  network: "public",
+  balance: "1,234.56 XLM",
 };
 
 export default function WalletStatus() {
@@ -47,21 +47,21 @@ export default function WalletStatus() {
     // Mock connection process - replace with actual wallet integration
     setTimeout(() => {
       // Simulate different scenarios for testing
-      const scenarios = ['success', 'error', 'wrong_network'];
+      const scenarios = ["success", "error", "wrong_network"];
       const scenario = scenarios[Math.floor(Math.random() * scenarios.length)];
 
       switch (scenario) {
-        case 'success':
+        case "success":
           setWalletState(WALLET_STATES.CONNECTED);
           setWalletData(mockWalletData);
           toast.success(copy.wallet.toastConnectedMsg, copy.wallet.toastConnectedTitle);
           break;
-        case 'error':
+        case "error":
           setWalletState(WALLET_STATES.ERROR);
           setError(copy.wallet.errorConnect);
           toast.error(copy.wallet.toastErrorMsg, copy.wallet.toastErrorTitle);
           break;
-        case 'wrong_network':
+        case "wrong_network":
           setWalletState(WALLET_STATES.WRONG_NETWORK);
           setError(copy.wallet.errorWrongNetwork);
           toast.error(copy.wallet.toastWrongNetworkMsg, copy.wallet.toastWrongNetworkTitle);
@@ -81,7 +81,7 @@ export default function WalletStatus() {
       case WALLET_STATES.DISCONNECTED:
         return {
           buttonText: copy.wallet.connectButton,
-          buttonVariant: 'primary',
+          buttonVariant: "primary",
           helperText: copy.wallet.helperDisconnected,
           disabled: false,
           showAddress: false,
@@ -90,7 +90,7 @@ export default function WalletStatus() {
       case WALLET_STATES.CONNECTING:
         return {
           buttonText: copy.wallet.connectingButton,
-          buttonVariant: 'loading',
+          buttonVariant: "loading",
           helperText: copy.wallet.helperConnecting,
           disabled: true,
           showAddress: false,
@@ -99,8 +99,11 @@ export default function WalletStatus() {
       case WALLET_STATES.CONNECTED:
         return {
           buttonText: copy.wallet.disconnectButton,
-          buttonVariant: 'secondary',
-          helperText: copy.wallet.helperConnected.replace('{network}', walletData?.network || 'public'),
+          buttonVariant: "secondary",
+          helperText: copy.wallet.helperConnected.replace(
+            "{network}",
+            walletData?.network || "public"
+          ),
           disabled: false,
           showAddress: true,
         };
@@ -108,7 +111,7 @@ export default function WalletStatus() {
       case WALLET_STATES.ERROR:
         return {
           buttonText: copy.wallet.retryButton,
-          buttonVariant: 'primary',
+          buttonVariant: "primary",
           helperText: error || copy.wallet.helperError,
           disabled: false,
           showAddress: false,
@@ -117,7 +120,7 @@ export default function WalletStatus() {
       case WALLET_STATES.WRONG_NETWORK:
         return {
           buttonText: copy.wallet.switchNetworkButton,
-          buttonVariant: 'warning',
+          buttonVariant: "warning",
           helperText: copy.wallet.helperWrongNetwork,
           disabled: false,
           showAddress: false,
@@ -126,7 +129,7 @@ export default function WalletStatus() {
       case WALLET_STATES.NO_WALLET:
         return {
           buttonText: copy.wallet.installWalletButton,
-          buttonVariant: 'external',
+          buttonVariant: "external",
           helperText: copy.wallet.helperNoWallet,
           disabled: false,
           showAddress: false,
@@ -138,8 +141,6 @@ export default function WalletStatus() {
   };
 
   const config = getStateConfig(walletState);
-
-
 
   const handleClick = () => {
     switch (walletState) {
@@ -154,7 +155,7 @@ export default function WalletStatus() {
         break;
 
       case WALLET_STATES.NO_WALLET:
-        window.open('https://www.stellar.org/wallets', '_blank');
+        window.open("https://www.stellar.org/wallets", "_blank");
         break;
 
       default:
@@ -165,25 +166,26 @@ export default function WalletStatus() {
   return (
     <div className="flex flex-col gap-3">
       {/* Inline error banner for ERROR and WRONG_NETWORK states */}
-      {(walletState === WALLET_STATES.ERROR || walletState === WALLET_STATES.WRONG_NETWORK) && error && (
-        <div
-          role="alert"
-          aria-live="assertive"
-          className="rounded-2xl border border-red-500/30 bg-red-500/10 p-3 text-slate-50 shadow-sm"
-          data-testid="wallet-error-banner"
-        >
-          <div className="flex items-start gap-3">
-            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-red-500/20 text-red-200 ring-1 ring-red-300/30">
-              <span aria-hidden="true" className="text-sm font-semibold">
-                !
-              </span>
-            </div>
-            <div className="min-w-0 flex-1">
-              <p className="text-sm leading-5 text-slate-200">{error}</p>
+      {(walletState === WALLET_STATES.ERROR || walletState === WALLET_STATES.WRONG_NETWORK) &&
+        error && (
+          <div
+            role="alert"
+            aria-live="assertive"
+            className="rounded-2xl border border-red-500/30 bg-red-500/10 p-3 text-slate-50 shadow-sm"
+            data-testid="wallet-error-banner"
+          >
+            <div className="flex items-start gap-3">
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-red-500/20 text-red-200 ring-1 ring-red-300/30">
+                <span aria-hidden="true" className="text-sm font-semibold">
+                  !
+                </span>
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="text-sm leading-5 text-slate-200">{error}</p>
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
 
       <div className="flex items-center gap-4 rounded-xl border border-slate-800 bg-slate-900 p-4">
         {/* Wallet address or helper text */}
@@ -231,9 +233,7 @@ export default function WalletStatus() {
         </Button>
 
         <div className="sr-only" role="status" aria-live="polite">
-          Wallet status:
-          {' '}
-          {walletState}
+          Wallet status: {walletState}
           {walletData?.address && `. Connected as ${walletData.address}`}
           {error && `. Error: ${error}`}
         </div>

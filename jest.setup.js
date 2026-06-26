@@ -1,4 +1,4 @@
-require('@testing-library/jest-dom');
+require("@testing-library/jest-dom");
 
 // Simple polyfills for Node environment
 global.Request = class Request {};
@@ -10,5 +10,5 @@ global.Response = class Response {
   }
 };
 
-const { toHaveNoViolations } = require('jest-axe');
+const { toHaveNoViolations } = require("jest-axe");
 expect.extend(toHaveNoViolations);
