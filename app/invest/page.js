@@ -189,21 +189,22 @@ export function InvestMarketplace({ loadInvoices = fetchInvestableInvoices }) {
   useEffect(() => {
     if (invoices !== null) {
       const isFiltered = debouncedQuery !== "" || hasActiveFilters(filters);
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setStatusMessage(getInvoiceLoadAnnouncement(allInvoices, { filterActive: isFiltered, filteredCount: filteredInvoices.length }));
     }
-  }, [invoices, debouncedQuery, filters, allInvoices.length, filteredInvoices.length]);
+  }, [invoices, debouncedQuery, filters, allInvoices, filteredInvoices.length]);
 
-  const handleLoadMore = useCallback(() => {
+  const handleLoadMore = () => {
     setVisibleCount((prev) => {
       const next = Math.min(prev + PAGE_SIZE, filteredInvoices.length);
-      setStatusMessage(getPaginationAnnouncement(next, filteredInvoices.length));
       return next;
     });
 
+    // Restore focus on next tick so the button is still in the DOM when we focus it.
     setTimeout(() => {
       loadMoreRef.current?.focus();
     }, 0);
-  }, [filteredInvoices.length]);
+  };
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100">

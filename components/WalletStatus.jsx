@@ -1,9 +1,8 @@
-﻿'use client';
+'use client';
 
 import { useState } from 'react';
 import Button from './Button';
 import { useToast } from './ToastProvider';
-import Button from './Button';
 import { copy } from '../app/copy/en';
 
 // Wallet connection states
@@ -201,52 +200,31 @@ export default function WalletStatus() {
             fill="none"
             viewBox="0 0 24 24"
             aria-hidden="true"
-          />
-
-          {/* Wallet address or helper text */}
-          {config.showAddress && walletData ? (
-            <div className="flex flex-col">
-              <span className="text-sm font-mono text-slate-300">{walletData.address}</span>
-              <span className="text-xs text-slate-500">{walletData.balance}</span>
-            </div>
-          ) : (
-            <span className="text-sm text-slate-400 max-w-xs">{config.helperText}</span>
-          )}
-        </div>
-
-        <Button
-          variant={config.variant}
-          loading={config.loading}
-          disabled={config.disabled}
-          onClick={handleClick}
-          aria-label={config.buttonText}
-          aria-describedby="wallet-helper-text"
-        >
-          {walletState === WALLET_STATES.CONNECTING && (
-            <svg
-              className="animate-spin -ml-1 mr-2 h-4 w-4 inline"
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-              aria-hidden="true"
-            >
-              <circle
-                className="opacity-25"
-                cx="12"
-                cy="12"
-                r="10"
-                stroke="currentColor"
-                strokeWidth="4"
-              />
-              <path
-                className="opacity-75"
-                fill="currentColor"
-                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-              />
-            </svg>
-          )}
-          {config.buttonText}
-        </Button>
+          >
+            <circle
+              className="opacity-25"
+              cx="12"
+              cy="12"
+              r="10"
+              stroke="currentColor"
+              strokeWidth="4"
+            />
+            <path
+              className="opacity-75"
+              fill="currentColor"
+              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+            />
+          </svg>
+        )}
+        {config.showAddress && walletData ? (
+          <div className="flex flex-col text-left">
+            <span className="text-sm font-mono text-slate-300">{walletData.address}</span>
+            <span className="text-xs text-slate-500">{walletData.balance}</span>
+          </div>
+        ) : (
+          config.buttonText
+        )}
+      </Button>
 
         <div className="sr-only" role="status" aria-live="polite">
           Wallet status:
@@ -259,7 +237,6 @@ export default function WalletStatus() {
         <div id="wallet-helper-text" className="sr-only">
           {config.helperText}
         </div>
-      </div>
     </div>
   );
 }
