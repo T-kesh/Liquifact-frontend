@@ -7,12 +7,13 @@
  * Mock data contract (per row):
  *   { id, issuer, amount, currency, dueDate, yield, status }
  */
-export default function InvoiceListSkeleton({ rows = 3 }) {
+export default function InvoiceListSkeleton({ rows = 3, ...props }) {
   return (
     <ul
-      aria-label="Loading invoices"
+      aria-label="Loading investable invoices"
       aria-busy="true"
       className="space-y-4"
+      {...props}
     >
       {Array.from({ length: rows }).map((_, i) => (
         <li

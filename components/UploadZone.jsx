@@ -3,6 +3,8 @@
 import { useRef, useState } from 'react';
 import { copy } from '../app/copy/en';
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+
 const FILE_CONSTRAINTS = {
   accept: '.pdf',
   mimeType: 'application/pdf',
@@ -126,7 +128,8 @@ function UploadZone({ onUploadSuccess }) {
       const body = new FormData();
       body.append('invoice', file);
 
-      const res = await fetch(`${API_URL}/invoices`, { method: 'POST', body });
+      const apiBase = process.env.NEXT_PUBLIC_API_URL || API_URL;
+      const res = await fetch(`${apiBase}/invoices`, { method: 'POST', body });
 
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
@@ -177,6 +180,17 @@ function UploadZone({ onUploadSuccess }) {
     <form onSubmit={handleSubmit} noValidate>
       <FileConstraintNotice />
 
+      {/* Hidden file input — placed outside the role=button div to avoid nested-interactive axe violation */}
+      <input
+        ref={inputRef}
+        id="invoice-file-input"
+        type="file"
+        accept={FILE_CONSTRAINTS.accept}
+        className="sr-only"
+        aria-label={copy.uploadZone.fileInputLabel}
+        onChange={handleChange}
+      />
+
       <div
         role="button"
         tabIndex={0}
@@ -188,15 +202,6 @@ function UploadZone({ onUploadSuccess }) {
         onKeyDown={handleKeyDown}
         className={`cursor-pointer rounded-xl border-2 border-dashed transition-colors duration-200 p-10 text-center ${dropZoneBorder}`}
       >
-        <input
-          ref={inputRef}
-          id="invoice-file-input"
-          type="file"
-          accept={FILE_CONSTRAINTS.accept}
-          className="sr-only"
-          aria-label={copy.uploadZone.fileInputLabel}
-          onChange={handleChange}
-        />
 
         {file ? (
           <div className="space-y-2">
@@ -273,8 +278,8 @@ function UploadZone({ onUploadSuccess }) {
       <button
         id="invoice-upload-btn"
         type="submit"
-        disabled={!file || !!error || isProcessing}
-        aria-disabled={!file || !!error || isProcessing}
+        disabled={!file || isProcessing}
+        aria-disabled={!file || isProcessing}
         className="mt-4 w-full rounded-xl bg-cyan-500 py-3 text-sm font-semibold text-slate-950 transition-all duration-200
           hover:bg-cyan-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-400
           disabled:opacity-40 disabled:cursor-not-allowed"
