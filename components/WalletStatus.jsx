@@ -47,7 +47,7 @@ export default function WalletStatus() {
     // Mock connection process - replace with actual wallet integration
     setTimeout(() => {
       // Simulate different scenarios for testing
-      const scenarios = ["success", "error", "wrong_network"];
+      const scenarios = ["success", "error", "wrong_network", "no_wallet"];
       const scenario = scenarios[Math.floor(Math.random() * scenarios.length)];
 
       switch (scenario) {
@@ -65,6 +65,9 @@ export default function WalletStatus() {
           setWalletState(WALLET_STATES.WRONG_NETWORK);
           setError(copy.wallet.errorWrongNetwork);
           toast.error(copy.wallet.toastWrongNetworkMsg, copy.wallet.toastWrongNetworkTitle);
+          break;
+        case "no_wallet":
+          setWalletState(WALLET_STATES.NO_WALLET);
           break;
       }
     }, 1500);

@@ -170,7 +170,8 @@ describe("WalletStatus — CONNECTING → ERROR (error path)", () => {
 
   it("displays error message in inline error banner", async () => {
     await connectWithError();
-    expect(screen.getByText(/Failed to connect to wallet/)).toBeInTheDocument();
+    const banner = screen.getByTestId("wallet-error-banner");
+    expect(within(banner).getByText(/Failed to connect to wallet/)).toBeInTheDocument();
   });
 
   it("error banner persists when button remains visible", async () => {
@@ -242,7 +243,8 @@ describe("WalletStatus — CONNECTING → WRONG_NETWORK (wrong network path)", (
 
   it("displays wrong network error message in inline error banner", async () => {
     await connectWithWrongNetwork();
-    expect(screen.getByText(/Wallet is connected to testnet/)).toBeInTheDocument();
+    const banner = screen.getByTestId("wallet-error-banner");
+    expect(within(banner).getByText(/Wallet is connected to testnet/)).toBeInTheDocument();
   });
 
   it("sr-only status region reflects wrong_network state and error", async () => {
@@ -330,7 +332,7 @@ describe("WalletStatus — ERROR → DISCONNECTED (error then disconnect)", () =
 
 describe("WalletStatus — WRONG_NETWORK → DISCONNECTED (wrong network then disconnect)", () => {
   async function connectWithWrongNetworkThenDisconnect() {
-    jest.spyOn(Math, "random").mockReturnValue(0.8);
+    jest.spyOn(Math, "random").mockReturnValue(0.7);
     renderWalletStatus();
     fireEvent.click(screen.getByRole("button", { name: /connect wallet/i }));
     await act(async () => {
@@ -346,7 +348,7 @@ describe("WalletStatus — WRONG_NETWORK → DISCONNECTED (wrong network then di
   });
 
   it("clears error banner after button click (switching network, simulated by retry)", async () => {
-    jest.spyOn(Math, "random").mockReturnValue(0.8);
+    jest.spyOn(Math, "random").mockReturnValue(0.7);
     renderWalletStatus();
     fireEvent.click(screen.getByRole("button", { name: /connect wallet/i }));
     await act(async () => {

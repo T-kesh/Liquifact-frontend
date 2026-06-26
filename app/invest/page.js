@@ -1,13 +1,15 @@
 // client directive
 "use client";
 import Button from "@/components/Button";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState, useMemo } from "react";
 import Link from "next/link";
 import ErrorBanner from "@/components/ErrorBanner";
 import InvoiceListSkeleton from "@/components/InvoiceListSkeleton";
 import Pagination from "@/components/Pagination";
 import { copy } from "../copy/en";
 import { fetchInvestableInvoices } from "../../lib/api/invoices";
+import InvoiceSearch from "@/components/InvoiceSearch";
+import InvoiceFilters, { DEFAULT_FILTERS, hasActiveFilters } from "@/components/InvoiceFilters";
 
 /**
  * Number of invoices rendered per page.  Export allows tests to reference
@@ -168,17 +170,106 @@ export function InvestMarketplace({ loadInvoices = fetchInvestableInvoices }) {
     return () => clearTimeout(timer);
   }, [searchQuery]);
 
-  // â”€â”€ Load-more handler â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-  /**
-   * Appends the next PAGE_SIZE items and updates the live-region status.
-   * Focus is moved back to the "Load more" button (if it still exists) so
-   * keyboard users do not lose their place in the page.
-   */
+  // ── Derived values & handlers ─────────────────────────────────────────────
+  const allInvoices = Array.isArray(invoices) ? invoices : [];
+
+  const filteredInvoices = useMemo(() => {
+    let result = [...allInvoices];
+    const q = debouncedQuery.trim().toLowerCase();
+
+    if (q) {
+      result = result.filter((inv) => inv.issuer.toLowerCase().includes(q));
+    }
+
+    if (filters.yieldMin !== "") {
+      const min = parseFloat(filters.yieldMin);
+      if (!isNaN(min)) {
+        result = result.filter((inv) => {
+          const y = parseFloat(inv.yield);
+          return !isNaN(y) && y >= min;
+        });
+      }
+    }
+
+    if (filters.yieldMax !== "") {
+      const max = parseFloat(filters.yieldMax);
+      if (!isNaN(max)) {
+        result = result.filter((inv) => {
+          const y = parseFloat(inv.yield);
+          return !isNaN(y) && y <= max;
+        });
+      }
+    }
+
+    if (filters.currency) {
+      result = result.filter((inv) => inv.currency === filters.currency);
+    }
+
+    if (filters.maturityFrom) {
+      const from = new Date(filters.maturityFrom);
+      result = result.filter((inv) => new Date(inv.dueDate) >= from);
+    }
+
+    if (filters.maturityTo) {
+      const to = new Date(filters.maturityTo);
+      result = result.filter((inv) => new Date(inv.dueDate) <= to);
+    }
+
+    if (filters.sort) {
+      result = [...result].sort((a, b) => {
+        switch (filters.sort) {
+          case "yield_desc":
+            return parseFloat(b.yield) - parseFloat(a.yield);
+          case "yield_asc":
+            return parseFloat(a.yield) - parseFloat(b.yield);
+          case "amount_desc":
+            return (
+              parseFloat(b.amount.replace(/,/g, "")) -
+              parseFloat(a.amount.replace(/,/g, ""))
+            );
+          case "amount_asc":
+            return (
+              parseFloat(a.amount.replace(/,/g, "")) -
+              parseFloat(b.amount.replace(/,/g, ""))
+            );
+          case "maturity_asc":
+            return new Date(a.dueDate) - new Date(b.dueDate);
+          case "maturity_desc":
+            return new Date(b.dueDate) - new Date(a.dueDate);
+          default:
+            return 0;
+        }
+      });
+    }
+
+    return result;
+  }, [allInvoices, debouncedQuery, filters]);
+
+  const filterActive =
+    hasActiveFilters(filters) || Boolean(debouncedQuery.trim());
+
+  const baseStatusMessage =
+    loadError || invoices === null
+      ? loadError
+        ? copy.invest.errorStatus
+        : ""
+      : getInvoiceLoadAnnouncement(allInvoices, {
+          filterActive,
+          filteredCount: filteredInvoices.length,
+        });
+  const statusMessage = paginationAnnouncement || baseStatusMessage;
+
+  const handleSearchChange = useCallback((value) => {
+    setSearchQuery(value);
+    setVisibleCount(PAGE_SIZE);
+    setPaginationAnnouncement("");
+  }, []);
+
   const handleLoadMore = useCallback(() => {
     setVisibleCount((prev) => {
-      const next = Math.min(prev + PAGE_SIZE, invoices?.length ?? prev);
-      const total = invoices?.length ?? 0;
-      setStatusMessage(getPaginationAnnouncement(next, total));
+      const next = Math.min(prev + PAGE_SIZE, filteredInvoices.length || prev);
+      const total = filteredInvoices.length;
+      setPaginationAnnouncement(getPaginationAnnouncement(next, total));
       return next;
     });
 
@@ -186,10 +277,9 @@ export function InvestMarketplace({ loadInvoices = fetchInvestableInvoices }) {
     setTimeout(() => {
       loadMoreRef.current?.focus();
     }, 0);
-  }, [invoices]);
+  }, [filteredInvoices.length]);
 
-  // â”€â”€ Derived values â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-  const visibleInvoices = Array.isArray(invoices) ? invoices.slice(0, visibleCount) : [];
+  const visibleInvoices = filteredInvoices.slice(0, visibleCount);
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100">
@@ -242,7 +332,7 @@ export function InvestMarketplace({ loadInvoices = fetchInvestableInvoices }) {
         ) : (
           <>
             <ul className="space-y-4">
-              {filteredInvoices.map((inv) => (
+              {visibleInvoices.map((inv) => (
                 <li key={inv.id}>
                   <Link
                     href={`/invest/${inv.id}`}

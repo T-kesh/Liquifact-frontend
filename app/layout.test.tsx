@@ -10,6 +10,7 @@ import "@testing-library/jest-dom";
 import { render, screen } from "@testing-library/react";
 import { axe } from "jest-axe";
 import React from "react";
+import Link from "next/link";
 
 // ── Mock RootLayout's external dependencies ───────────────────────────────────
 
@@ -21,11 +22,16 @@ jest.mock("../components/Footer", () => {
   return MockFooter;
 });
 
-jest.mock("../components/ToastProvider", () => ({
-  ToastProvider({ children }: { children: React.ReactNode }) {
-    return <>{children}</>;
-  },
-}));
+jest.mock("../components/ToastProvider", () => {
+  const React = require("react");
+  const MockToastContext = React.createContext(null);
+  return {
+    ToastProvider({ children }: { children: React.ReactNode }) {
+      return <>{children}</>;
+    },
+    ToastContext: MockToastContext,
+  };
+});
 
 jest.mock("../components/WalletContext", () => ({
   WalletProvider({ children }: { children: React.ReactNode }) {
@@ -66,7 +72,7 @@ describe("Skip-to-content link", () => {
     render(
       <SkipLinkFixture>
         <main id="main-content">
-          <a href="/invoices">Invoices</a>
+          <Link href="/invoices">Invoices</Link>
           <button type="button">Click me</button>
         </main>
       </SkipLinkFixture>
@@ -87,8 +93,8 @@ describe("Skip-to-content link", () => {
     render(
       <SkipLinkFixture>
         <main id="main-content">
-          <a href="/invoices">Invoices</a>
-          <a href="/invest">Invest</a>
+          <Link href="/invoices">Invoices</Link>
+          <Link href="/invest">Invest</Link>
         </main>
       </SkipLinkFixture>
     );
@@ -159,7 +165,7 @@ describe("RootLayout", () => {
     render(
       <RootLayout>
         <main id="main-content">
-          <a href="/invoices">Invoices</a>
+          <Link href="/invoices">Invoices</Link>
         </main>
       </RootLayout>
     );
